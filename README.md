@@ -9,13 +9,21 @@ Build a tool to analyze CVE data and identify the most critical security vulnera
 
 ## Stage 1: Parse and Rank CVEs
 
-**Input:** `cves.csv` - CVE identifiers with CVSS vector strings (mix of v1 and v2 formats)
+**Input:** `cves.csv` - CVE identifiers with CVSS v1 vector strings
 
 ### Tasks
 - Parse CSV and extract CVE IDs with their CVSS vectors
-- Detect vector version (v1 or v2) from the `CVSS:1/` or `CVSS:2/` prefix
 - Calculate base score for each CVE using the appropriate formula
 - Display top 5 CVEs by severity (highest score first)
+
+### Expected Output
+```
+Top 5 CVEs by Severity:
+1. CVE-2024-1234 - Score: 9.8
+2. CVE-2023-5678 - Score: 9.5
+3. CVE-2024-9012 - Score: 8.7
+...
+```
 
 ### CVSS v1 Scoring
 
@@ -49,7 +57,23 @@ Vector: `CVSS:1/AV:N/AC:L/I:C`
 - I:C = 1.0
 - Score = 10 * 1.0 * 0.8 * 1.0 = 8.0
 
-### CVSS v2 Scoring
+## Stage 2: CVSS v2 Scoring
+
+**Input:** `cves2.csv` - CVE identifiers with CVSS vector strings (mix of v1 and v2 formats)
+
+### Tasks
+- Parse CSV containing a mix of v1 and v2 vectors
+- Calculate base score for each CVE using the appropriate formula
+- Display top 5 CVEs by severity (highest score first)
+
+### Expected Output
+```
+Top 5 CVEs by Severity:
+1. CVE-2024-1234 - Score: 9.8 (CVSS v2)
+2. CVE-2023-5678 - Score: 9.5 (CVSS v1)
+3. CVE-2024-9012 - Score: 8.7 (CVSS v2)
+...
+```
 
 CVSS v2 adds a fourth component for authentication:
 - **AV (Access Vector)**: Same as v1 but adds:
@@ -81,16 +105,7 @@ Vector: `CVSS:2/AV:N/AC:L/Au:N/I:C`
 - I:C = 1.0
 - Score = 10 * 1.0 * 0.71 * 0.704 * 1.0 = 5.0
 
-### Expected Output
-```
-Top 5 CVEs by Severity:
-1. CVE-2024-1234 - Score: 9.8 (CVSS v2)
-2. CVE-2023-5678 - Score: 9.5 (CVSS v1)
-3. CVE-2024-9012 - Score: 8.7 (CVSS v2)
-...
-```
-
-## Stage 2: Custom Scoring & Prioritization
+## Stage 3: Custom Scoring & Prioritization
 
 **Input:** `org_weights.csv` - Per-organization weights for CVSS components (0.0 to 1.0)
 
@@ -98,6 +113,19 @@ Top 5 CVEs by Severity:
 - Load organization weights from CSV
 - Calculate custom scores for each CVE using org-specific weights
 - Generate top 5 CVEs per organization
+
+### Expected Output
+```
+org-1:
+1. CVE-2024-1234 - Score: 8.0
+2. CVE-2023-5678 - Score: 7.5
+...
+
+org-2:
+1. CVE-2023-9999 - Score: 12.3
+2. CVE-2024-1234 - Score: 11.2
+...
+```
 
 ### Weighted Scoring
 
@@ -128,20 +156,7 @@ Org Score = 10 * adjusted_AV * adjusted_AC * adjusted_Au * adjusted_I
 
 *Note: For v1 vectors, Au weight is ignored (no Authentication component)*
 
-### Expected Output
-```
-org-1:
-1. CVE-2024-1234 - Score: 8.0
-2. CVE-2023-5678 - Score: 7.5
-...
-
-org-2:
-1. CVE-2023-9999 - Score: 12.3
-2. CVE-2024-1234 - Score: 11.2
-...
-```
-
-## Stage 3: Vulnerabilities and Advisories
+## Stage 4: Vulnerabilities and Advisories
 
 **Inputs:**
 - `advisories.csv` - Security advisories mapping CVEs to affected packages/versions and available fixes
@@ -151,12 +166,6 @@ org-2:
 - Identify which CVEs affect each organization based on their installed packages
 - Determine if patches are available
 - Display top 5 vulnerable CVEs per org (sorted by org-specific score from Stage 2)
-
-### Version Range Formats
-Support these semver patterns:
-- **Range:** `1.2.0-1.2.5` (versions 1.2.0 through 1.2.5 inclusive)
-- **Comparison:** `>=1.9.0 <1.9.15` (1.9.0 or higher, but less than 1.9.15)
-- **Wildcard:** `2.x` or `1.5.x` (any patch/minor version)
 
 ### Expected Output
 ```
@@ -169,3 +178,9 @@ org-2 Vulnerabilities:
 1. CVE-2023-9999 (openssl 3.0.1) - Score: 9.1 - No patch available
 ...
 ```
+
+### Version Range Formats
+Support these semver patterns:
+- **Range:** `1.2.0-1.2.5` (versions 1.2.0 through 1.2.5 inclusive)
+- **Comparison:** `>=1.9.0 <1.9.15` (1.9.0 or higher, but less than 1.9.15)
+- **Wildcard:** `2.x` or `1.5.x` (any patch/minor version)
