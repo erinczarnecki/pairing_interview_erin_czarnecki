@@ -18,4 +18,11 @@ CVSS_V2_SCORES = {
 with open("cves.csv", "r") as file:
     reader = csv.DictReader(file)
     for row in reader:
-        print(row)
+        name_array = row['cvss_vector'].split("/")
+        score_of_item (item in name_array)
+
+            
+        print(name_array)
+
+
+    

@@ -19,7 +19,28 @@ const CVSS_V2_SCORES = {
 
 const data = fs.readFileSync("cves.csv", "utf8");
 const records = parse(data, { columns: true });
-
+//console.log(CVSS_V1_SCORES['VALUE_1']['Value_2'])
 records.forEach(row => {
-  console.log(row);
-});
+  let nameArray = row['cvss_vector'].split("/")
+    let AV_Score = 10
+  nameArray.forEach(item => {
+    let parts = item.split(":")
+    // console.log("line 28")
+    let part1 = CVSS_V1_SCORES[parts[0]]
+    // console.log(item)
+    
+    if (CVSS_V1_SCORES[parts[0]] != undefined) {
+      let score_part = CVSS_V1_SCORES[parts[0]][parts[1]] 
+      // console.log(score_part)
+    AV_Score *= score_part
+      // console.log(AV_Score)
+      // console.log(name)
+    }
+  
+    
+  }
+  )
+    console.log(AV_Score
+  }
+
+);
